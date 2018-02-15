@@ -1,0 +1,32 @@
+{
+  "name": "capstone",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "dependencies": {
+    "bufferutil": "*",
+    "eris": "*",
+    "erlpack": "github:abalabahaha/erlpack",
+    "eventemitter3": "*",
+    "jsftp": "*",
+    "mysql": "*",
+    "node-opus": "*",
+    "sodium-native": "*",
+    "uws": "*",
+    "zlib-sync": "*"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/victhebeast/Capstone-Project.git"
+  },
+  "author": "Victor",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/victhebeast/Capstone-Project/issues"
+  },
+  "homepage": "https://github.com/victhebeast/Capstone-Project#readme"
+}
