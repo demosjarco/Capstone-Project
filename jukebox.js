@@ -282,6 +282,7 @@ bot.on("messageReactionAdd", (message, emoji, userID) => {
 		} else if (emoji.name == "23f9")  {
 			channels[message.channel.guild.id].player.stopPlaying();
 		}
+		bot.removeMessageReaction(message.channel.id, message.id, ":" + emoji.name + ":" + emoji.id, userID);
 	}
 });
 
