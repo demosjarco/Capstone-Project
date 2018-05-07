@@ -117,9 +117,7 @@ const mainCommand = bot.registerCommand("search", (msg, args) => {
 										// Make into raw array without accuracy key
 
 										queries[msg.channel.guild.id] = {
-											results: [
-												temp
-											]
+											results: temp
 										};
 										var resultFields = [];
 										temp.forEach(function(item, index) {
@@ -142,7 +140,6 @@ const mainCommand = bot.registerCommand("search", (msg, args) => {
 												channel: message.channel.id,
 												id: message.id,
 											}
-											console.log(queries);
 										});
 									} else if (searchResults.length == 1) {
 										// Only 1 result - play it
@@ -243,6 +240,52 @@ const mainCommand = bot.registerCommand("search", (msg, args) => {
 	argsRequired: true,
 	description: "Search for tracks based on artist, event, year, and/or location",
 	fullDescription: "Search for tracks based on artist, event, year, and/or location",
+});
+
+bot.on("messageReactionAdd", (message, emoji, userID) => {
+	if (queries[message.channel.guild.id] && queries[message.channel.guild.id].msg.channel == message.channel.id && queries[message.channel.guild.id].msg.id == message.id && userID != "413448427918065670") {
+		const number = emojis.indexOf(":" + emoji.name + ":" + emoji.id);
+		bot.joinVoiceChannel("413445212552298500").catch((err) => { // Join the user's voice channel
+			bot.createMessage(message.channel.id, "Error joining voice channel. Error: " + err.message); // Notify the user if there is an error
+			console.log(err); // Log the error
+		}).then((connection) => {
+			channels[message.channel.guild.id] = {voiceChannel: "413445212552298500", player: connection};
+			if (connection.playing) { // Stop playing if the connection is playing something
+				connection.stopPlaying();
+			}
+			connection.play("ftp://" + secretKeys.ftpUser + ":" + secretKeys.ftpPass + "@" + secretKeys.ftpHost + "/mnt/main/Music/EDM_Music/" + queries[message.channel.guild.id].results[number].eventF + "/" + queries[message.channel.guild.id].results[number].year + "/" + queries[message.channel.guild.id].results[number].locationF + "/" + queries[message.channel.guild.id].results[number].filename, {
+				sampleRate: bot.getChannel(connection.channelID).bitrate
+			});
+			loading = false;
+			bot.createMessage(message.channel.id, {embed: {
+				title: "Playing",
+				description: "Use controls below to manually stop playing otherwise I will auto leave once song over.",
+				color: 0x00FF00,
+				footer: {
+					text: queries[message.channel.guild.id].results[number].eventName + " " + queries[message.channel.guild.id].results[number].locationName + " " + queries[message.channel.guild.id].results[number].year,
+					icon_url: queries[message.channel.guild.id].results[number].eventIcon,
+				},
+				author: {
+					name: queries[message.channel.guild.id].results[number].artistName,
+					icon_url: queries[message.channel.guild.id].results[number].artistIcon
+				}
+			}});
+			connection.on("warn", (message) => {
+				console.warn(message);
+			});
+			connection.on("error", (err) => {
+				console.error(err);
+			});
+			connection.on("end", () => {
+				// Only leave channel if song ended because it really ended, not because chose a different song
+				if (!loading && !connection.paused) {
+					delete channels[bot.getChannel(connection.channelID).guild.id];
+					bot.leaveVoiceChannel(connection.channelID);
+				}
+			});
+		});
+		bot.removeMessageReaction(message.channel.id, message.id, ":" + emoji.name + ":" + emoji.id, userID);
+	}
 });
 
 const emojis = [
