@@ -42,7 +42,10 @@ bot.connect();
 
 const mainCommand = bot.registerCommand("search", (msg, args) => {
 	// Delete existing search for new search
-	if (queries[msg.channel.guild.id] != undefined) delete queries[msg.channel.guild.id];
+	if (queries[msg.channel.guild.id] != undefined) {
+		bot.deleteMessage(queries[msg.channel.guild.id].msg.channel, queries[msg.channel.guild.id].msg.id);
+		delete queries[msg.channel.guild.id];
+	}
 	
 	var searchResults = [];
 	var searchTermLoopCounter = 0;
@@ -217,6 +220,7 @@ const mainCommand = bot.registerCommand("search", (msg, args) => {
 	// Run first time
 	searchTermLoop(args[searchTermLoopCounter]);
 }, {
+	deleteCommand: true,
 	argsRequired: true,
 	description: "Search for tracks based on artist, event, year, and/or location",
 	fullDescription: "Search for tracks based on artist, event, year, and/or location",
