@@ -272,7 +272,7 @@ bot.on("messageReactionAdd", (message, emoji, userID) => {
 			});
 		});
 		bot.removeMessageReaction(message.channel.id, message.id, ":" + emoji.name + ":" + emoji.id, userID);
-	} else if (channels[message.channel.guild.id]) {
+	} else if (channels[message.channel.guild.id] && userID != "413448427918065670") {
 		if (emoji.name == "23ef") {
 			if (channels[message.channel.guild.id].player.paused) {
 				channels[message.channel.guild.id].player.resume();
