@@ -143,78 +143,58 @@ const mainCommand = bot.registerCommand("search", (msg, args) => {
 										});
 									} else if (searchResults.length == 1) {
 										// Only 1 result - play it
-										if (msg.member.voiceState.channelID == null) {
-											bot.createMessage(msg.channel.id, {embed: {
-												title: "Error",
-												description: "You must be in a voice channel before doing this command. Please try your search again",
-												color: 0xFF0000
-											}});
-											return "";
-										} else {
-											loading = true;
-											bot.joinVoiceChannel(msg.member.voiceState.channelID).catch((err) => { // Join the user's voice channel
-												bot.createMessage(msg.channel.id, "Error joining voice channel. Error: " + err.message); // Notify the user if there is an error
-												console.error(err); // Log the error
-											}).then((connection) => {
-												channels[msg.channel.guild.id] = {voiceChannel: msg.member.voiceState.channelID, player: connection};
-												if (Object.keys(channels).length > 0)  {
-													bot.editStatus("online", {
-														name: "Fire on " + Object.keys(channels).length + "/" + Object.keys(bot.guildShardMap).length + " servers"
-													});
-												} else {
-													bot.editStatus("idle", null);
-												}
-												if (connection.playing) { // Stop playing if the connection is playing something
-													connection.stopPlaying();
-												}
-												connection.play("ftp://" + secretKeys.ftpUser + ":" + secretKeys.ftpPass + "@" + secretKeys.ftpHost + "/mnt/main/Music/EDM_Music/" + searchResults[0].trackDict.eventF + "/" + searchResults[0].trackDict.year + "/" + searchResults[0].trackDict.locationF + "/" + searchResults[0].trackDict.filename, {
-													sampleRate: bot.getChannel(connection.channelID).bitrate
-												});
-												pool.getConnection(function(err99, connection99) {
-													if (err99) throw err99;
+										loading = true;
+										bot.joinVoiceChannel("413445212552298500").catch((err) => { // Join the user's voice channel
+											bot.createMessage(msg.channel.id, "Error joining voice channel. Error: " + err.message); // Notify the user if there is an error
+											console.error(err); // Log the error
+										}).then((connection) => {
+											channels[msg.channel.guild.id] = {voiceChannel: "413445212552298500", player: connection};
+											if (connection.playing) { // Stop playing if the connection is playing something
+												connection.stopPlaying();
+											}
+											connection.play("ftp://" + secretKeys.ftpUser + ":" + secretKeys.ftpPass + "@" + secretKeys.ftpHost + "/EDM_Music/" + searchResults[0].trackDict.eventF + "/" + searchResults[0].trackDict.year + "/" + searchResults[0].trackDict.locationF + "/" + searchResults[0].trackDict.filename, {
+												sampleRate: bot.getChannel(connection.channelID).bitrate
+											});
+											pool.getConnection(function(err99, connection99) {
+												if (err99) throw err99;
 
-													connection99.query("UPDATE tracks SET plays = plays + 1 WHERE trackId = " + searchResults[0].trackDict.trackId, function(error99, results99, fields99) {
-														connection99.release();
+												connection99.query("UPDATE tracks SET plays = plays + 1 WHERE trackId = " + searchResults[0].trackDict.trackId, function(error99, results99, fields99) {
+													connection99.release();
 
-														if (error99) throw error99;
-													});
-												});
-												loading = false;
-												bot.createMessage(msg.channel.id, {embed: {
-													title: "Playing " + searchResults[0].trackDict.artistName,
-													description: "Use `!beats stop` to manually stop playing otherwise I will auto leave once song over.",
-													color: 0x00FF00,
-													footer: {
-														text: searchResults[0].trackDict.eventName + " " + searchResults[0].trackDict.locationName + " " + searchResults[0].trackDict.year,
-														icon_url: searchResults[0].trackDict.eventIcon
-													},
-													author: {
-														name: searchResults[0].trackDict.artistName,
-														icon_url: searchResults[0].trackDict.artistIcon
-													}
-												}});
-												connection.on("warn", (message) => {
-													console.warn(message);
-												});
-												connection.on("error", (err) => {
-													console.error(err);
-												});
-												connection.on("end", () => {
-													// Only leave channel if song ended because it really ended, not because chose a different song
-													if (!loading && !connection.paused) {
-														delete channels[bot.getChannel(connection.channelID).guild.id];
-														if (Object.keys(channels).length > 0)  {
-															bot.editStatus("online", {
-																name: "Fire on " + Object.keys(channels).length + "/" + Object.keys(bot.guildShardMap).length + " servers"
-															});
-														} else {
-															bot.editStatus("idle", null);
-														}
-														bot.leaveVoiceChannel(connection.channelID);
-													}
+													if (error99) throw error99;
 												});
 											});
-										}
+											loading = false;
+											bot.createMessage(msg.channel.id, {embed: {
+												title: "Playing " + searchResults[0].trackDict.artistName,
+												description: "Use `!beats stop` to manually stop playing otherwise I will auto leave once song over.",
+												color: 0x00FF00,
+												footer: {
+													text: searchResults[0].trackDict.eventName + " " + searchResults[0].trackDict.locationName + " " + searchResults[0].trackDict.year,
+													icon_url: searchResults[0].trackDict.eventIcon
+												},
+												author: {
+													name: searchResults[0].trackDict.artistName,
+													icon_url: searchResults[0].trackDict.artistIcon
+												}
+											}}).then((message) => {
+												message.addReaction(emojis[11]);
+												message.addReaction(emojis[12]);
+											});
+											connection.on("warn", (message) => {
+												console.warn(message);
+											});
+											connection.on("error", (err) => {
+												console.error(err);
+											});
+											connection.on("end", () => {
+												// Only leave channel if song ended because it really ended, not because chose a different song
+												if (!loading && !connection.paused) {
+													delete channels[bot.getChannel(connection.channelID).guild.id];
+													bot.leaveVoiceChannel(connection.channelID);
+												}
+											});
+										});
 									} else {
 										// No result
 										bot.createMessage(msg.channel.id, {embed: {
@@ -253,7 +233,7 @@ bot.on("messageReactionAdd", (message, emoji, userID) => {
 			if (connection.playing) { // Stop playing if the connection is playing something
 				connection.stopPlaying();
 			}
-			connection.play("ftp://" + secretKeys.ftpUser + ":" + secretKeys.ftpPass + "@" + secretKeys.ftpHost + "/mnt/main/Music/EDM_Music/" + queries[message.channel.guild.id].results[number].eventF + "/" + queries[message.channel.guild.id].results[number].year + "/" + queries[message.channel.guild.id].results[number].locationF + "/" + queries[message.channel.guild.id].results[number].filename, {
+			connection.play("ftp://" + secretKeys.ftpUser + ":" + secretKeys.ftpPass + "@" + secretKeys.ftpHost + "/EDM_Music/" + queries[message.channel.guild.id].results[number].eventF + "/" + queries[message.channel.guild.id].results[number].year + "/" + queries[message.channel.guild.id].results[number].locationF + "/" + queries[message.channel.guild.id].results[number].filename, {
 				sampleRate: bot.getChannel(connection.channelID).bitrate
 			});
 			loading = false;
@@ -269,7 +249,10 @@ bot.on("messageReactionAdd", (message, emoji, userID) => {
 					name: queries[message.channel.guild.id].results[number].artistName,
 					icon_url: queries[message.channel.guild.id].results[number].artistIcon
 				}
-			}});
+			}}).then((message) => {
+				message.addReaction(emojis[11]);
+				message.addReaction(emojis[12]);
+			});
 			connection.on("warn", (message) => {
 				console.warn(message);
 			});
@@ -285,6 +268,16 @@ bot.on("messageReactionAdd", (message, emoji, userID) => {
 			});
 		});
 		bot.removeMessageReaction(message.channel.id, message.id, ":" + emoji.name + ":" + emoji.id, userID);
+	} else if (channels[message.channel.guild.id]) {
+		if (emoji.name == "23ef") {
+			if (channels[message.channel.guild.id].player.paused) {
+				channels[message.channel.guild.id].player.resume();
+			} else {
+				channels[message.channel.guild.id].player.pause();
+			}
+		} else if (emoji.name == "23f9")  {
+			channels[message.channel.guild.id].player.stopPlaying();
+		}
 	}
 });
 
@@ -300,6 +293,6 @@ const emojis = [
 	":3820e3:443079256608604180",
 	":3920e3:443079256491425792",
 	":1f51f:443080289552433183",
-	":23ef:443080301128843275",
-	":23f9:443080310784000040"
+	":23ef:443080301128843275", // play/pause
+	":23f9:443080310784000040" // stop
 ];
