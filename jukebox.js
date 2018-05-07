@@ -266,7 +266,7 @@ bot.on("messageReactionAdd", (message, emoji, userID) => {
 			connection.on("end", () => {
 				// Only leave channel if song ended because it really ended, not because chose a different song
 				if (!loading && !connection.paused) {
-					delete channels[bot.getChannel(connection.channelID).guild.id];
+					delete channels[bot.getChannel("413445212552298500").guild.id];
 					bot.leaveVoiceChannel(connection.channelID);
 				}
 			});
